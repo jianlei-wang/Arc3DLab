@@ -1,0 +1,43 @@
+@use './base.scss';
+:root {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  color: #fff;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-size: 14px;
+}
+
+html,
+body {
+  width: 100vw;
+  height: 100vh;
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
+}
+
+#app {
+  width: 100vw;
+  height: 100vh;
+}
+
+.border-all {
+  border: 1px solid var(--ev-border-color);
+  border-radius: var(--ev-border-radius);
+}
+.border-l {
+  border-left: 1px solid var(--ev-border-color);
+}
+.border-r {
+  border-right: 1px solid var(--ev-border-color);
+}
+.border-t {
+  border-top: 1px solid var(--ev-border-color);
+}
+.border-b {
+  border-bottom: 1px solid var(--ev-border-color);
+}

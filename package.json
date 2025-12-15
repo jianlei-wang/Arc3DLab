@@ -13,6 +13,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "cesium": "^1.136.0",
     "vue": "^3.5.24",
     "vue-i18n": "^9.14.5"
   },
@@ -22,8 +23,10 @@
     "@vue/tsconfig": "^0.8.1",
     "electron": "^39.0.0",
     "electron-builder": "^26.0.12",
+    "sass-embedded": "^1.96.0",
     "typescript": "~5.9.3",
     "vite": "^7.2.4",
+    "vite-plugin-cesium": "^1.2.23",
     "vite-plugin-electron": "^0.29.0",
     "vite-plugin-electron-renderer": "^0.14.6",
     "vue-tsc": "^3.1.4"
@@ -37,6 +40,12 @@
     "files": [
       "dist/**/*",
       "dist-electron/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "build/icon.ico",
+        "to": "icon.ico"
+      }
     ],
     "win": {
       "target": [

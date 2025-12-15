@@ -2,12 +2,15 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import electron from 'vite-plugin-electron'
 import renderer from 'vite-plugin-electron-renderer'
+import cesium from 'vite-plugin-cesium'
 import path from 'node:path'
 
 // https://vite.dev/config/
 export default defineConfig({
+  base: './',
   plugins: [
     vue(),
+    cesium(),
     electron([
       {
         // 主进程入口文件
@@ -48,6 +51,14 @@ export default defineConfig({
       },
     ]),
     renderer(),
+    {
+      name: 'fix-cesium-path',
+      transformIndexHtml(html) {
+        return html
+          .replace(/href="\/cesium\//g, 'href="./cesium/')
+          .replace(/src="\/cesium\//g, 'src="./cesium/')
+      },
+    },
   ],
   resolve: {
     alias: {
