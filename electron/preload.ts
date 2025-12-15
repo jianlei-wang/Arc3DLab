@@ -10,4 +10,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   onMessage: (callback: (message: string) => void) => {
     ipcRenderer.on('message', (_event, message) => callback(message))
   },
+  // 在默认浏览器中打开 URL
+  openExternal: (url: string) => {
+    ipcRenderer.send('open-external', url)
+  },
 })

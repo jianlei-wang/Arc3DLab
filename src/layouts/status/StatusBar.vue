@@ -9,5 +9,6 @@ defineOptions({ name: '状态栏', inheritAttrs: false });
   width: 100vw;
   height: 30px;
   background: black;
+  z-index: 2;
 }
 </style>

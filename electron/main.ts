@@ -1,4 +1,4 @@
-import { app, BrowserWindow, session, Tray } from 'electron';
+import { app, BrowserWindow, session, Tray, ipcMain, shell } from 'electron';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -28,9 +28,17 @@ function setContentSecurityPolicy() {
       responseHeaders: {
         ...details.responseHeaders,
         'Content-Security-Policy': [
-          isDev
-            ? "default-src 'self' 'unsafe-inline' 'unsafe-eval' http://localhost:* ws://localhost:*; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline';"
-            : "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https:; worker-src 'self' blob:",
+          [
+            "default-src 'self'",
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval' blob:",
+            "style-src 'self' 'unsafe-inline'",
+            "img-src 'self' data: https:",
+            "font-src 'self' data:",
+            isDev
+              ? "connect-src 'self' https: http://localhost:* ws://localhost:*"
+              : "connect-src 'self' https:",
+            "worker-src 'self' blob:"
+          ].join('; ')
         ],
       },
     });
@@ -69,6 +77,11 @@ function createWindow() {
 app.whenReady().then(() => {
   // 设置 CSP 安全策略
   setContentSecurityPolicy();
+
+  // 注册 IPC 处理器：打开外部链接
+  ipcMain.on('open-external', (_event, url: string) => {
+    shell.openExternal(url)
+  })
 
   tray = new Tray(resolveIconPath());
   tray.setToolTip('Arc3DLab');

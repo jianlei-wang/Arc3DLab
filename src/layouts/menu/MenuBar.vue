@@ -12,6 +12,6 @@ defineOptions({ name: '菜单栏', inheritAttrs: false });
 .menu-bar-main {
   width: 100vw;
   height: 100px;
-  background: yellow;
+  z-index: 2;
 }
 </style>

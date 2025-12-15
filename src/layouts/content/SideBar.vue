@@ -9,5 +9,6 @@ defineOptions({ name: '图层和地址栏', inheritAttrs: false });
   width: 15vw;
   min-width: 350px;
   background: orange;
+  z-index: 1;
 }
 </style>

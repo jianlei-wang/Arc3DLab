@@ -1,45 +1,74 @@
-import { app as o, Tray as d, BrowserWindow as r, session as u } from "electron";
-import n from "node:path";
-import { fileURLToPath as p } from "node:url";
-const h = p(import.meta.url), s = n.dirname(h);
-process.env.ELECTRON_DISABLE_SECURITY_WARNINGS = "true";
-const t = process.env.NODE_ENV === "development";
-let e = null, l = null;
-function a() {
-  return t ? n.join(s, "../build/icon.ico") : n.join(process.resourcesPath, "icon.ico");
+import { app, ipcMain, shell, Tray, BrowserWindow, session } from "electron";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+const __filename$1 = fileURLToPath(import.meta.url);
+const __dirname$1 = path.dirname(__filename$1);
+process.env["ELECTRON_DISABLE_SECURITY_WARNINGS"] = "true";
+const isDev = process.env.NODE_ENV === "development";
+let mainWindow = null;
+let tray = null;
+function resolveIconPath() {
+  return isDev ? path.join(__dirname$1, "../build/icon.ico") : path.join(process.resourcesPath, "icon.ico");
 }
-function w() {
-  u.defaultSession.webRequest.onHeadersReceived((c, f) => {
-    f({
+function setContentSecurityPolicy() {
+  session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
+    callback({
       responseHeaders: {
-        ...c.responseHeaders,
+        ...details.responseHeaders,
         "Content-Security-Policy": [
-          t ? "default-src 'self' 'unsafe-inline' 'unsafe-eval' http://localhost:* ws://localhost:*; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline';" : "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https:; worker-src 'self' blob:"
+          [
+            "default-src 'self'",
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval' blob:",
+            "style-src 'self' 'unsafe-inline'",
+            "img-src 'self' data: https:",
+            "font-src 'self' data:",
+            isDev ? "connect-src 'self' https: http://localhost:* ws://localhost:*" : "connect-src 'self' https:",
+            "worker-src 'self' blob:"
+          ].join("; ")
         ]
       }
     });
   });
 }
-function i() {
-  e = new r({
+function createWindow() {
+  mainWindow = new BrowserWindow({
     width: 1200,
     height: 800,
-    autoHideMenuBar: !0,
-    icon: a(),
+    autoHideMenuBar: true,
+    icon: resolveIconPath(),
     webPreferences: {
-      preload: n.join(s, "preload.js"),
-      nodeIntegration: !1,
-      contextIsolation: !0
+      preload: path.join(__dirname$1, "preload.js"),
+      nodeIntegration: false,
+      contextIsolation: true
     }
-  }), t ? (e.loadURL("http://localhost:5173"), e.webContents.openDevTools()) : (e.loadFile(n.join(s, "../dist/index.html")), e.webContents.openDevTools()), e.on("closed", () => {
-    e = null;
+  });
+  if (isDev) {
+    mainWindow.loadURL("http://localhost:5173");
+    mainWindow.webContents.openDevTools();
+  } else {
+    mainWindow.loadFile(path.join(__dirname$1, "../dist/index.html"));
+    mainWindow.webContents.openDevTools();
+  }
+  mainWindow.on("closed", () => {
+    mainWindow = null;
   });
 }
-o.whenReady().then(() => {
-  w(), l = new d(a()), l.setToolTip("Arc3DLab"), i(), o.on("activate", () => {
-    r.getAllWindows().length === 0 && i();
+app.whenReady().then(() => {
+  setContentSecurityPolicy();
+  ipcMain.on("open-external", (_event, url) => {
+    shell.openExternal(url);
+  });
+  tray = new Tray(resolveIconPath());
+  tray.setToolTip("Arc3DLab");
+  createWindow();
+  app.on("activate", () => {
+    if (BrowserWindow.getAllWindows().length === 0) {
+      createWindow();
+    }
   });
 });
-o.on("window-all-closed", () => {
-  process.platform !== "darwin" && o.quit();
+app.on("window-all-closed", () => {
+  if (process.platform !== "darwin") {
+    app.quit();
+  }
 });
