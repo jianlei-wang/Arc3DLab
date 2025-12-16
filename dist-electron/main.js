@@ -1,6 +1,7 @@
 import { app, ipcMain, shell, Tray, BrowserWindow, session } from "electron";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import fs from "node:fs";
 const __filename$1 = fileURLToPath(import.meta.url);
 const __dirname$1 = path.dirname(__filename$1);
 process.env["ELECTRON_DISABLE_SECURITY_WARNINGS"] = "true";
@@ -31,7 +32,34 @@ function setContentSecurityPolicy() {
     });
   });
 }
-function createSplashScreen(systemLocale) {
+function getAppLocale() {
+  try {
+    const configPath = path.join(app.getPath("userData"), "app-config.json");
+    if (fs.existsSync(configPath)) {
+      const config = JSON.parse(fs.readFileSync(configPath, "utf-8"));
+      if (config.locale) {
+        return config.locale;
+      }
+    }
+  } catch (error) {
+    console.error("Error reading app config:", error);
+  }
+  return app.getLocale();
+}
+function saveAppLocale(locale) {
+  try {
+    const configPath = path.join(app.getPath("userData"), "app-config.json");
+    let config = {};
+    if (fs.existsSync(configPath)) {
+      config = JSON.parse(fs.readFileSync(configPath, "utf-8"));
+    }
+    config = { ...config, locale };
+    fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+  } catch (error) {
+    console.error("Error saving app config:", error);
+  }
+}
+function createSplashScreen() {
   splashScreen = new BrowserWindow({
     width: 400,
     height: 300,
@@ -46,12 +74,18 @@ function createSplashScreen(systemLocale) {
       contextIsolation: true
     }
   });
+  const appLocale = getAppLocale();
   let splashFile = "splash-en.html";
-  if (systemLocale.startsWith("zh")) {
+  if (appLocale.startsWith("zh")) {
     splashFile = "splash-zh.html";
   }
-  const splashPath = path.join(__dirname$1, `../${splashFile}`).replace(/\\/g, "/");
-  const splashUrl = `file:///${splashPath}`;
+  let splashPath;
+  if (isDev) {
+    splashPath = path.join(__dirname$1, `../${splashFile}`);
+  } else {
+    splashPath = path.join(process.resourcesPath, splashFile);
+  }
+  const splashUrl = `file://${splashPath.replace(/\\/g, "/")}`;
   splashScreen.loadURL(splashUrl);
   splashScreen.show();
   splashScreen.on("closed", () => {
@@ -74,11 +108,15 @@ function createWindow() {
   });
   if (isDev) {
     mainWindow.loadURL("http://localhost:5173");
+    mainWindow.webContents.openDevTools();
   } else {
     mainWindow.loadFile(path.join(__dirname$1, "../dist/index.html"));
   }
   mainWindow.webContents.once("dom-ready", () => {
     mainWindow?.webContents.send("main-window-loaded");
+  });
+  ipcMain.on("set-locale", (_event, locale) => {
+    saveAppLocale(locale);
   });
   mainWindow.on("closed", () => {
     mainWindow = null;
@@ -91,8 +129,7 @@ app.whenReady().then(() => {
   });
   tray = new Tray(resolveIconPath());
   tray.setToolTip("Arc3DLab");
-  const systemLocale = app.getLocale();
-  createSplashScreen(systemLocale);
+  createSplashScreen();
   createWindow();
   setTimeout(() => {
     if (splashScreen) {

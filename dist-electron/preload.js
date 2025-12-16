@@ -12,5 +12,9 @@ electron.contextBridge.exposeInMainWorld("electronAPI", {
   // 在默认浏览器中打开 URL
   openExternal: (url) => {
     electron.ipcRenderer.send("open-external", url);
+  },
+  // 设置应用程序语言
+  setLocale: (locale) => {
+    electron.ipcRenderer.send("set-locale", locale);
   }
 });

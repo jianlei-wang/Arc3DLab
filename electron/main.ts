@@ -1,6 +1,7 @@
 import { app, BrowserWindow, session, Tray, ipcMain, shell } from 'electron';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import fs from 'node:fs';
 
 // ESM 模块中获取 __dirname
 const __filename = fileURLToPath(import.meta.url);
@@ -46,7 +47,47 @@ function setContentSecurityPolicy() {
   });
 }
 
-function createSplashScreen(systemLocale: string) {
+// 获取应用程序保存的语言设置
+function getAppLocale(): string {
+  try {
+    // 读取本地存储的配置文件
+    const configPath = path.join(app.getPath('userData'), 'app-config.json');
+    if (fs.existsSync(configPath)) {
+      const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+      if (config.locale) {
+        return config.locale;
+      }
+    }
+  } catch (error) {
+    console.error('Error reading app config:', error);
+  }
+  
+  // 如果没有找到配置，则返回系统默认语言
+  return app.getLocale();
+}
+
+// 保存应用程序语言设置
+function saveAppLocale(locale: string) {
+  try {
+    const configPath = path.join(app.getPath('userData'), 'app-config.json');
+    let config = {};
+    
+    // 如果配置文件已存在，读取现有配置
+    if (fs.existsSync(configPath)) {
+      config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+    }
+    
+    // 更新语言设置
+    config = { ...config, locale };
+    
+    // 保存配置文件
+    fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+  } catch (error) {
+    console.error('Error saving app config:', error);
+  }
+}
+
+function createSplashScreen() {
   splashScreen = new BrowserWindow({
     width: 400,
     height: 300,
@@ -62,14 +103,26 @@ function createSplashScreen(systemLocale: string) {
     },
   });
 
-  // Select splash screen based on system locale
+  // 获取应用程序保存的语言设置，如果不存在则使用系统语言
+  const appLocale = getAppLocale();
+  
+  // Select splash screen based on app locale
   let splashFile = 'splash-en.html';
-  if (systemLocale.startsWith('zh')) {
+  if (appLocale.startsWith('zh')) {
     splashFile = 'splash-zh.html';
   }
   
-  const splashPath = path.join(__dirname, `../${splashFile}`).replace(/\\/g, '/');
-  const splashUrl = `file:///${splashPath}`;
+  // 修复生产环境中的 splash 文件路径问题
+  let splashPath: string;
+  if (isDev) {
+    // 开发环境：文件在项目根目录
+    splashPath = path.join(__dirname, `../${splashFile}`);
+  } else {
+    // 生产环境：文件被打包到 resources 目录
+    splashPath = path.join(process.resourcesPath, splashFile);
+  }
+  
+  const splashUrl = `file://${splashPath.replace(/\\/g, '/')}`;
   splashScreen.loadURL(splashUrl);
   
   // Show splash screen immediately
@@ -97,7 +150,7 @@ function createWindow() {
   // 开发环境加载 Vite 开发服务器
   if (isDev) {
     mainWindow.loadURL('http://localhost:5173');
-    // mainWindow.webContents.openDevTools();
+    mainWindow.webContents.openDevTools();
   } else {
     // 生产环境加载打包后的文件
     mainWindow.loadFile(path.join(__dirname, '../dist/index.html'));
@@ -108,6 +161,11 @@ function createWindow() {
   mainWindow.webContents.once('dom-ready', () => {
     // 发送消息给渲染进程，表示主窗口已准备就绪
     mainWindow?.webContents.send('main-window-loaded');
+  });
+
+  // 监听来自渲染进程的语言设置更改
+  ipcMain.on('set-locale', (_event, locale: string) => {
+    saveAppLocale(locale);
   });
 
   mainWindow.on('closed', () => {
@@ -128,9 +186,8 @@ app.whenReady().then(() => {
   tray = new Tray(resolveIconPath());
   tray.setToolTip('Arc3DLab');
 
-  // Get system locale and create splash screen
-  const systemLocale = app.getLocale();
-  createSplashScreen(systemLocale);
+  // Create splash screen with app locale preference
+  createSplashScreen();
   
   // 创建主窗口
   createWindow();

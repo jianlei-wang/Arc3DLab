@@ -2,6 +2,7 @@ export interface IElectronAPI {
   sendMessage: (message: string) => void
   onMessage: (callback: (message: string) => void) => void
   openExternal: (url: string) => void
+  setLocale: (locale: string) => void
 }
 
 declare global {

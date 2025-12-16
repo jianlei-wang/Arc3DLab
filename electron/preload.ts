@@ -14,4 +14,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   openExternal: (url: string) => {
     ipcRenderer.send('open-external', url)
   },
+  // 设置应用程序语言
+  setLocale: (locale: string) => {
+    ipcRenderer.send('set-locale', locale)
+  },
 })
