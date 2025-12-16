@@ -11,8 +11,9 @@ process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = 'true';
 // 当前环境判断
 const isDev = process.env.NODE_ENV === 'development';
 
-// 主窗口
+// 主窗口和启动屏幕
 let mainWindow: BrowserWindow | null = null;
+let splashScreen: BrowserWindow | null = null;
 let tray: Tray | null = null;
 
 function resolveIconPath() {
@@ -45,12 +46,47 @@ function setContentSecurityPolicy() {
   });
 }
 
+function createSplashScreen(systemLocale: string) {
+  splashScreen = new BrowserWindow({
+    width: 400,
+    height: 300,
+    transparent: false,
+    frame: false,
+    resizable: false,
+    movable: false,
+    alwaysOnTop: true,
+    icon: resolveIconPath(),
+    webPreferences: {
+      nodeIntegration: false,
+      contextIsolation: true,
+    },
+  });
+
+  // Select splash screen based on system locale
+  let splashFile = 'splash-en.html';
+  if (systemLocale.startsWith('zh')) {
+    splashFile = 'splash-zh.html';
+  }
+  
+  const splashPath = path.join(__dirname, `../${splashFile}`).replace(/\\/g, '/');
+  const splashUrl = `file:///${splashPath}`;
+  splashScreen.loadURL(splashUrl);
+  
+  // Show splash screen immediately
+  splashScreen.show();
+
+  splashScreen.on('closed', () => {
+    splashScreen = null;
+  });
+}
+
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1200,
     height: 800,
     autoHideMenuBar: true,
     icon: resolveIconPath(),
+    show: false, // Initially hide the main window
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       nodeIntegration: false,
@@ -61,12 +97,18 @@ function createWindow() {
   // 开发环境加载 Vite 开发服务器
   if (isDev) {
     mainWindow.loadURL('http://localhost:5173');
-    mainWindow.webContents.openDevTools();
+    // mainWindow.webContents.openDevTools();
   } else {
     // 生产环境加载打包后的文件
     mainWindow.loadFile(path.join(__dirname, '../dist/index.html'));
-    mainWindow.webContents.openDevTools();
+    // mainWindow.webContents.openDevTools();
   }
+
+  // 当主窗口加载完成时，通知主进程
+  mainWindow.webContents.once('dom-ready', () => {
+    // 发送消息给渲染进程，表示主窗口已准备就绪
+    mainWindow?.webContents.send('main-window-loaded');
+  });
 
   mainWindow.on('closed', () => {
     mainWindow = null;
@@ -86,7 +128,22 @@ app.whenReady().then(() => {
   tray = new Tray(resolveIconPath());
   tray.setToolTip('Arc3DLab');
 
+  // Get system locale and create splash screen
+  const systemLocale = app.getLocale();
+  createSplashScreen(systemLocale);
+  
+  // 创建主窗口
   createWindow();
+  
+  // 3秒后关闭启动屏幕并显示主窗口
+  setTimeout(() => {
+    if (splashScreen) {
+      splashScreen.close();
+    }
+    if (mainWindow) {
+      mainWindow.show();
+    }
+  }, 3000);
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {

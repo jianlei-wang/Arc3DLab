@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Arc3DLab - Loading...</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #1e1e1e;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        }
+        
+        .splash-container {
+            text-align: center;
+            color: white;
+        }
+        
+        .splash-logo {
+            width: 120px;
+            height: 120px;
+            margin-bottom: 30px;
+            background-color: #42b883;
+            border-radius: 50%;
+            display: inline-block;
+            position: relative;
+            animation: pulse 2s infinite;
+        }
+        
+        .splash-logo::before {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 60px;
+            height: 60px;
+            background-color: white;
+            border-radius: 50%;
+        }
+        
+        .splash-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        
+        .splash-status {
+            font-size: 14px;
+            color: #aaa;
+            margin-top: 20px;
+        }
+        
+        .progress-bar {
+            width: 200px;
+            height: 4px;
+            background-color: #333;
+            border-radius: 2px;
+            margin: 20px auto;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            background-color: #42b883;
+            transition: width 0.3s ease;
+        }
+        
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(66, 184, 131, 0.4);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(66, 184, 131, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(66, 184, 131, 0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="splash-container">
+        <div class="splash-logo"></div>
+        <div class="splash-title">Arc3DLab</div>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progress"></div>
+        </div>
+        <div class="splash-status" id="status">Initializing application...</div>
+    </div>
+    
+    <script>
+        // Simulate loading progress
+        const progressFill = document.getElementById('progress');
+        const statusText = document.getElementById('status');
+        
+        const loadingSteps = [
+            'Loading core modules...',
+            'Initializing Cesium engine...',
+            'Setting up 3D environment...',
+            'Preparing GIS data...',
+            'Finalizing startup...'
+        ];
+        
+        let step = 0;
+        const interval = setInterval(() => {
+            if (step < loadingSteps.length) {
+                statusText.textContent = loadingSteps[step];
+                progressFill.style.width = `${(step + 1) * (100 / loadingSteps.length)}%`;
+                step++;
+            } else {
+                clearInterval(interval);
+            }
+        }, 800);
+    </script>
+</body>
+</html>
