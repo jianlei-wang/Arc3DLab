@@ -2,7 +2,6 @@
 import { onMounted, ref, computed } from 'vue';
 import SideBar from './SideBar.vue';
 import { initMap } from '@/utils/cesium/InitMap';
-import DockedPanelContent from '@/components/DockedPanelContent.vue';
 
 defineOptions({ name: '关键视图', inheritAttrs: false });
 
@@ -23,11 +22,12 @@ const addDockedPanel = (panel: any) => {
 
 // 移除停靠面板的方法
 const removeDockedPanel = (panelId: string) => {
-  const index = dockedPanels.value.findIndex(p => p.id === panelId);
+  const index = dockedPanels.value.findIndex((p) => p.id === panelId);
   if (index > -1) {
     dockedPanels.value.splice(index, 1);
     if (activePanel.value && activePanel.value.id === panelId) {
-      activePanel.value = dockedPanels.value.length > 0 ? dockedPanels.value[0] : null;
+      activePanel.value =
+        dockedPanels.value.length > 0 ? dockedPanels.value[0] : null;
     }
   }
 };
@@ -39,7 +39,7 @@ const setActivePanel = (panel: any) => {
 
 // 根据面板标题设置激活面板
 const setActivePanelByTitle = (panelTitle: string) => {
-  const panel = dockedPanels.value.find(p => p.title === panelTitle);
+  const panel = dockedPanels.value.find((p) => p.title === panelTitle);
   if (panel) {
     activePanel.value = panel;
   }
@@ -86,22 +86,16 @@ const showUnifiedCloseButton = computed(() => {
     <SideBar />
     <div class="map-container-wrapper">
       <div id="map-container"></div>
-      
+
       <!-- 停靠预览区域 -->
-      <div 
-        v-show="showDockPreview" 
-        class="dock-preview"
-      ></div>
-      
+      <div v-show="showDockPreview" class="dock-preview"></div>
+
       <!-- 停靠面板容器 -->
-      <div 
-        v-if="dockedPanels.length > 0"
-        class="docked-panel"
-      >
+      <div v-if="dockedPanels.length > 0" class="docked-panel">
         <div class="panel-header">
           <div class="panel-tabs">
-            <div 
-              v-for="panel in dockedPanels" 
+            <div
+              v-for="panel in dockedPanels"
               :key="panel.id"
               class="panel-tab"
               :class="{ active: panel.id === activePanel?.id }"
@@ -109,23 +103,26 @@ const showUnifiedCloseButton = computed(() => {
             >
               {{ panel.title }}
               <!-- 多个面板时显示各自的关闭按钮 -->
-              <button 
-                v-if="!showUnifiedCloseButton" 
-                class="tab-close-btn" 
+              <button
+                v-if="!showUnifiedCloseButton"
+                class="close-btn"
                 @click.stop="removeDockedPanel(panel.id)"
-              >×</button>
+              >
+                ×
+              </button>
             </div>
           </div>
           <!-- 单个面板时显示统一关闭按钮 -->
-          <button 
-            v-if="showUnifiedCloseButton" 
-            class="close-btn" 
+          <button
+            v-if="showUnifiedCloseButton"
+            class="close-btn"
             @click="removeDockedPanel(activePanel.id)"
-          >×</button>
+          >
+            ×
+          </button>
         </div>
         <div class="panel-content">
           <!-- 显示当前激活面板的内容 -->
-          <DockedPanelContent :panel-type="activePanel?.title" />
         </div>
       </div>
     </div>
@@ -134,22 +131,23 @@ const showUnifiedCloseButton = computed(() => {
 
 <style lang="scss" scoped>
 .content-dom-main {
-  width: 100vw;
+  width: 100%;
   flex: 1 1 auto;
   height: 0;
   background: green;
   display: flex;
-  
+
   .map-container-wrapper {
-    flex: 1;
+    width: 100%;
+    height: 100%;
     display: flex;
     position: relative;
-    
+
     #map-container {
       flex: 1;
       transition: width 0.3s ease;
     }
-    
+
     // 停靠预览区域
     .dock-preview {
       position: absolute;
@@ -158,94 +156,65 @@ const showUnifiedCloseButton = computed(() => {
       width: 400px;
       height: 100%;
       background: rgba(64, 158, 255, 0.1);
-      border: 2px dashed #409eff;
+      border: 2px dashed var(--ev-border-light);
       z-index: 999;
       pointer-events: none;
     }
-    
+
     .docked-panel {
       width: 400px;
       height: 100%;
-      background: #fff;
-      border-left: 1px solid #ddd;
+      background: var(--ev-back-color);
+      border-left: 1px solid var(--ev-border-color);
       display: flex;
       flex-direction: column;
-      box-shadow: -2px 0 5px rgba(0,0,0,0.1);
       z-index: 100;
-      
+
       .panel-header {
-        background: linear-gradient(0deg, #1f201d 0%, #046cef 100%);
-        color: white;
-        padding: 8px 12px;
+        background: var(--ev-back-primary);
         display: flex;
         justify-content: space-between;
         align-items: center;
-        
+        width: 100%;
         .panel-tabs {
           display: flex;
           flex: 1;
           overflow-x: auto;
-          
+
           .panel-tab {
-            padding: 4px 12px;
+            padding: 4px 10px;
             cursor: pointer;
-            border-radius: 3px;
-            margin-right: 5px;
             display: flex;
             align-items: center;
             position: relative;
-            
+            letter-spacing: 1px;
+            column-gap: 5px;
+            overflow-x: auto;
             &.active {
-              background: rgba(255,255,255,0.2);
+              border-bottom: 2px solid var(--ev-border-active);
+              color: var(--ev-color-active);
+              font-weight: bold;
+              background: #004b6d;
             }
-            
+
             &:hover:not(.active) {
-              background: rgba(255,255,255,0.1);
+              background: rgba(255, 255, 255, 0.1);
             }
-            
-            .tab-close-btn {
-              background: none;
-              border: none;
-              color: white;
-              font-size: 16px;
-              cursor: pointer;
+
+            .close-btn {
+              font-size: 18px;
               width: 18px;
               height: 18px;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              border-radius: 50%;
-              margin-left: 5px;
-              
-              &:hover {
-                background-color: rgba(255, 255, 255, 0.2);
-              }
+              line-height: 18px;
             }
-          }
-        }
-        
-        .close-btn {
-          background: none;
-          border: none;
-          color: white;
-          font-size: 18px;
-          cursor: pointer;
-          width: 20px;
-          height: 20px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          border-radius: 50%;
-          
-          &:hover {
-            background-color: rgba(255, 255, 255, 0.2);
           }
         }
       }
-      
+
       .panel-content {
-        flex: 1;
-        overflow: auto;
+        flex: 1 1 auto;
+        height: 0;
+        padding: 15px;
       }
     }
   }

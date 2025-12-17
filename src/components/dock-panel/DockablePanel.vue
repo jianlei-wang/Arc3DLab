@@ -1,46 +1,6 @@
-<template>
-  <Teleport to="body">
-    <div 
-      v-if="visible" 
-      class="dockable-panel-overlay"
-      :class="{ 'fullscreen-overlay': fullscreenOverlay }"
-      @mousedown="handleOverlayClick"
-    >
-      <div 
-        ref="panelRef"
-        class="dockable-panel"
-        :style="panelStyle"
-        @mousedown.stop="handlePanelMouseDown"
-      >
-        <!-- 弹窗头部 -->
-        <div 
-          class="panel-header"
-          @mousedown="startDrag"
-        >
-          <slot name="header">
-            <div class="header-content">
-              <h3>{{ title }}</h3>
-              <button class="close-btn" @click="closePanel">×</button>
-            </div>
-          </slot>
-        </div>
-        
-        <!-- 弹窗内容 -->
-        <div class="panel-content">
-          <slot></slot>
-        </div>
-        
-        <!-- 弹窗底部 -->
-        <div class="panel-footer" v-if="$slots.footer">
-          <slot name="footer"></slot>
-        </div>
-      </div>
-    </div>
-  </Teleport>
-</template>
-
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue';
+defineOptions({ name: '弹窗组件_支持拖拽贴边', inheritAttrs: false });
 
 // 定义 props
 interface Props {
@@ -62,7 +22,7 @@ const props = withDefaults(defineProps<Props>(), {
   minWidth: 200,
   minHeight: 150,
   dockable: true, // 默认支持贴边功能
-  fullscreenOverlay: true // 默认全屏遮罩
+  fullscreenOverlay: true, // 默认全屏遮罩
 });
 
 // 定义 emits
@@ -81,24 +41,30 @@ const isPositionInitialized = ref(false); // 标记位置是否已初始化
 
 // 计算面板样式
 const panelStyle = computed(() => {
-  const width = typeof props.width === 'number' ? `${props.width}px` : props.width;
-  const height = typeof props.height === 'number' ? `${props.height}px` : props.height;
-  const minWidth = typeof props.minWidth === 'number' ? `${props.minWidth}px` : props.minWidth;
-  const minHeight = typeof props.minHeight === 'number' ? `${props.minHeight}px` : props.minHeight;
-  
+  const width =
+    typeof props.width === 'number' ? `${props.width}px` : props.width;
+  const height =
+    typeof props.height === 'number' ? `${props.height}px` : props.height;
+  const minWidth =
+    typeof props.minWidth === 'number' ? `${props.minWidth}px` : props.minWidth;
+  const minHeight =
+    typeof props.minHeight === 'number'
+      ? `${props.minHeight}px`
+      : props.minHeight;
+
   // 只有在位置初始化完成后才应用位置样式
   const style: any = {
     width,
     height,
     minWidth,
-    minHeight
+    minHeight,
   };
-  
+
   if (isPositionInitialized.value) {
     style.left = `${panelPosition.value.x}px`;
     style.top = `${panelPosition.value.y}px`;
   }
-  
+
   return style;
 });
 
@@ -125,19 +91,19 @@ const handlePanelMouseDown = () => {
 // 开始拖拽
 const startDrag = (event: MouseEvent) => {
   if (!panelRef.value || !isPositionInitialized.value) return;
-  
+
   isDragging.value = true;
-  
+
   // 计算鼠标相对于面板的偏移量
   const rect = panelRef.value.getBoundingClientRect();
   dragOffset.value = {
     x: event.clientX - rect.left,
-    y: event.clientY - rect.top
+    y: event.clientY - rect.top,
   };
-  
+
   // 将面板置于最前面
   panelRef.value.style.zIndex = '9999';
-  
+
   // 如果支持贴边功能，隐藏停靠预览
   if (props.dockable && window.hideDockingPreview) {
     window.hideDockingPreview();
@@ -146,26 +112,27 @@ const startDrag = (event: MouseEvent) => {
 
 // 拖拽过程
 const onDrag = (event: MouseEvent) => {
-  if (!isDragging.value || !panelRef.value || !isPositionInitialized.value) return;
-  
+  if (!isDragging.value || !panelRef.value || !isPositionInitialized.value)
+    return;
+
   // 计算新的位置
   const newX = event.clientX - dragOffset.value.x;
   const newY = event.clientY - dragOffset.value.y;
-  
+
   // 获取窗口尺寸
   const windowWidth = window.innerWidth;
   const windowHeight = window.innerHeight;
-  
+
   // 获取面板尺寸
   const panelWidth = panelRef.value.offsetWidth;
   const panelHeight = panelRef.value.offsetHeight;
-  
+
   // 边界检查
   panelPosition.value = {
     x: Math.max(0, Math.min(newX, windowWidth - panelWidth)),
-    y: Math.max(0, Math.min(newY, windowHeight - panelHeight))
+    y: Math.max(0, Math.min(newY, windowHeight - panelHeight)),
   };
-  
+
   // 如果支持贴边功能，检查是否靠近右边边缘（30px范围内）实现停靠预览
   if (props.dockable) {
     const rightDistance = windowWidth - (panelPosition.value.x + panelWidth);
@@ -186,15 +153,15 @@ const onDrag = (event: MouseEvent) => {
 // 结束拖拽
 const stopDrag = () => {
   if (!isDragging.value || !panelRef.value) return;
-  
+
   isDragging.value = false;
-  
+
   // 如果支持贴边功能
   if (props.dockable) {
     // 获取窗口尺寸
     const windowWidth = window.innerWidth;
     const panelWidth = panelRef.value.offsetWidth;
-    
+
     // 检查是否靠近右边边缘（30px范围内）实现停靠
     const rightDistance = windowWidth - (panelPosition.value.x + panelWidth);
     if (rightDistance <= 30) {
@@ -202,7 +169,7 @@ const stopDrag = () => {
       if (window.hideDockingPreview) {
         window.hideDockingPreview();
       }
-      
+
       // 停靠面板
       dockPanel();
     } else {
@@ -218,7 +185,7 @@ const stopDrag = () => {
 const dockPanel = () => {
   // 生成唯一ID
   const panelId = 'panel_' + Date.now();
-  
+
   // 创建停靠面板对象，保存组件和属性
   const dockedPanel = {
     id: panelId,
@@ -227,14 +194,14 @@ const dockPanel = () => {
     component: 'div', // 这里应该传递实际的内容组件
     props: {},
     // 保存插槽内容
-    content: ''
+    content: '',
   };
-  
+
   // 添加到停靠面板列表
   if (window.addDockedPanel) {
     window.addDockedPanel(dockedPanel);
   }
-  
+
   // 关闭浮动面板
   emit('update:visible', false);
   emit('dock', dockedPanel);
@@ -243,44 +210,53 @@ const dockPanel = () => {
 // 初始化面板位置（居中显示）
 const initPanelPosition = () => {
   if (!panelRef.value) return;
-  
+
   // 初始位置居中
   const windowWidth = window.innerWidth;
   const windowHeight = window.innerHeight;
   const panelWidth = panelRef.value.offsetWidth || props.width;
   const panelHeight = panelRef.value.offsetHeight || props.height;
-  
+
   // 确保使用数字值
-  const widthValue = typeof panelWidth === 'number' ? panelWidth : parseInt(panelWidth.toString(), 10);
-  const heightValue = typeof panelHeight === 'number' ? panelHeight : parseInt(panelHeight.toString(), 10);
-  
+  const widthValue =
+    typeof panelWidth === 'number'
+      ? panelWidth
+      : parseInt(panelWidth.toString(), 10);
+  const heightValue =
+    typeof panelHeight === 'number'
+      ? panelHeight
+      : parseInt(panelHeight.toString(), 10);
+
   panelPosition.value = {
     x: (windowWidth - widthValue) / 2,
-    y: (windowHeight - heightValue) / 2
+    y: (windowHeight - heightValue) / 2,
   };
-  
+
   // 标记位置已初始化
   isPositionInitialized.value = true;
 };
 
 // 监听 visible 属性变化，当面板显示时重新居中
-watch(() => props.visible, (newVal) => {
-  if (newVal) {
-    // 重置位置初始化标记
-    isPositionInitialized.value = false;
-    
-    // 使用 nextTick 确保 DOM 已更新
-    nextTick(() => {
-      // 延迟一小段时间确保面板尺寸已计算
-      setTimeout(() => {
-        initPanelPosition();
-      }, 50);
-    });
-  } else {
-    // 面板关闭时重置位置初始化标记
-    isPositionInitialized.value = false;
+watch(
+  () => props.visible,
+  (newVal) => {
+    if (newVal) {
+      // 重置位置初始化标记
+      isPositionInitialized.value = false;
+
+      // 使用 nextTick 确保 DOM 已更新
+      nextTick(() => {
+        // 延迟一小段时间确保面板尺寸已计算
+        setTimeout(() => {
+          initPanelPosition();
+        }, 50);
+      });
+    } else {
+      // 面板关闭时重置位置初始化标记
+      isPositionInitialized.value = false;
+    }
   }
-});
+);
 
 // 生命周期钩子
 onMounted(() => {
@@ -298,19 +274,56 @@ onUnmounted(() => {
 // 监听窗口大小变化
 function handleResize() {
   if (!panelRef.value || !isPositionInitialized.value) return;
-  
+
   const windowWidth = window.innerWidth;
   const windowHeight = window.innerHeight;
   const panelWidth = panelRef.value.offsetWidth;
   const panelHeight = panelRef.value.offsetHeight;
-  
+
   // 调整面板位置，确保不会超出边界
   panelPosition.value = {
     x: Math.max(0, Math.min(panelPosition.value.x, windowWidth - panelWidth)),
-    y: Math.max(0, Math.min(panelPosition.value.y, windowHeight - panelHeight))
+    y: Math.max(0, Math.min(panelPosition.value.y, windowHeight - panelHeight)),
   };
 }
 </script>
+<template>
+  <Teleport to="body">
+    <div
+      v-if="visible"
+      class="dockable-panel-overlay"
+      :class="{ 'fullscreen-overlay': fullscreenOverlay }"
+      @mousedown="handleOverlayClick"
+    >
+      <div
+        ref="panelRef"
+        class="dockable-panel"
+        :style="panelStyle"
+        @mousedown.stop="handlePanelMouseDown"
+      >
+        <!-- 弹窗头部，支持<template #header>调整 -->
+        <div class="panel-header" @mousedown="startDrag">
+          <slot name="header">
+            <div class="header-content">
+              <h3>{{ title }}</h3>
+              <button class="close-btn" @click="closePanel">×</button>
+            </div>
+          </slot>
+        </div>
+
+        <!-- 弹窗内容 -->
+        <div class="panel-content">
+          <slot></slot>
+        </div>
+
+        <!-- 弹窗底部 -->
+        <div class="panel-footer" v-if="$slots.footer">
+          <slot name="footer"></slot>
+        </div>
+      </div>
+    </div>
+  </Teleport>
+</template>
 
 <style lang="scss" scoped>
 .dockable-panel-overlay {
@@ -323,26 +336,26 @@ function handleResize() {
   display: flex;
   justify-content: center;
   align-items: center;
-  
+
   // 非全屏遮罩模式
   &:not(.fullscreen-overlay) {
     background-color: transparent;
     pointer-events: none;
-    
+
     .dockable-panel {
       pointer-events: all;
     }
   }
-  
+
   // 全屏遮罩模式
   &.fullscreen-overlay {
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: rgba(0, 0, 0, 0.1);
   }
 }
 
 .dockable-panel {
   position: fixed;
-  background: #fff;
+  background: var(--ev-back-color);
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   display: flex;
@@ -350,57 +363,42 @@ function handleResize() {
   z-index: 9999;
   overflow: hidden;
   transition: all 0.2s ease;
-  
+
   // 在位置未初始化时隐藏面板，避免闪烁
   opacity: 0;
-  
+
   // 位置初始化后显示面板
-  &:not([style*="left"]) {
+  &:not([style*='left']) {
     opacity: 0;
   }
-  
-  &[style*="left"] {
+
+  &[style*='left'] {
     opacity: 1;
   }
 }
 
 .panel-header {
-  background: linear-gradient(0deg, #1f201d 0%, #046cef 100%);
-  color: white;
-  padding: 12px 16px;
+  background: var(--ev-back-primary);
+  color: var(--ev-color-head);
+  padding: 10px 16px;
   cursor: move;
   user-select: none;
-  
+  font-weight: bold;
+
   .header-content {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    
+
     h3 {
       margin: 0;
       font-size: 16px;
-      font-weight: 500;
+      letter-spacing: 1px;
     }
   }
 }
 
-.close-btn {
-  background: none;
-  border: none;
-  color: white;
-  font-size: 20px;
-  cursor: pointer;
-  width: 24px;
-  height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  
-  &:hover {
-    background-color: rgba(255, 255, 255, 0.2);
-  }
-}
+
 
 .panel-content {
   flex: 1;

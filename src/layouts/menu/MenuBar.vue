@@ -13,5 +13,6 @@ defineOptions({ name: '菜单栏', inheritAttrs: false });
   width: 100vw;
   height: 100px;
   z-index: 2;
+  background: var(--ev-back-color);
 }
 </style>

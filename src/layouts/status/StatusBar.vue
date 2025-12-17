@@ -8,7 +8,7 @@ defineOptions({ name: '状态栏', inheritAttrs: false });
 .status-bar-main {
   width: 100vw;
   height: 30px;
-  background: black;
+  background: var(--ev-back-color);
   z-index: 2;
 }
 </style>
