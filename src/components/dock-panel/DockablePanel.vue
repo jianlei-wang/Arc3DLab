@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { onPanelDock } from '@/utils/PanelDock';
 import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue';
 defineOptions({ name: '弹窗组件_支持拖拽贴边', inheritAttrs: false });
 
@@ -138,14 +139,10 @@ const onDrag = (event: MouseEvent) => {
     const rightDistance = windowWidth - (panelPosition.value.x + panelWidth);
     if (rightDistance <= 30) {
       // 显示停靠预览
-      if (window.showDockingPreview) {
-        window.showDockingPreview();
-      }
+      window.showDockingPreview && window.showDockingPreview();
     } else {
       // 隐藏停靠预览
-      if (window.hideDockingPreview) {
-        window.hideDockingPreview();
-      }
+      window.hideDockingPreview && window.hideDockingPreview();
     }
   }
 };
@@ -183,28 +180,21 @@ const stopDrag = () => {
 
 // 停靠面板
 const dockPanel = () => {
-  // 生成唯一ID
-  const panelId = 'panel_' + Date.now();
-
-  // 创建停靠面板对象，保存组件和属性
-  const dockedPanel = {
-    id: panelId,
-    title: props.title,
-    width: 400,
-    component: 'div', // 这里应该传递实际的内容组件
-    props: {},
-    // 保存插槽内容
-    content: '',
-  };
-
-  // 添加到停靠面板列表
+  // 使用 PanelDock.ts 中的 onPanelDock 函数处理停靠逻辑
   if (window.addDockedPanel) {
-    window.addDockedPanel(dockedPanel);
-  }
+    // 确保获取到完整的面板内容
+    nextTick(() => {
+      const content =
+        panelRef.value?.querySelector('.panel-content')?.innerHTML;
+      onPanelDock(props.title, { content: content, width: props.width });
 
-  // 关闭浮动面板
-  emit('update:visible', false);
-  emit('dock', dockedPanel);
+      // 在获取内容后再关闭浮动面板
+      emit('update:visible', false);
+    });
+  } else {
+    // 如果没有全局函数，直接关闭面板
+    emit('update:visible', false);
+  }
 };
 
 // 初始化面板位置（居中显示）
@@ -397,8 +387,6 @@ function handleResize() {
     }
   }
 }
-
-
 
 .panel-content {
   flex: 1;

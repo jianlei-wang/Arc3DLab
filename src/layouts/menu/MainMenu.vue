@@ -142,15 +142,27 @@ function handleSubMenuLeave(parentId: string) {
 }
 
 const showExample = ref(false);
+
 function closeExample() {
   showExample.value = false;
   onPanelClose('示例库');
 }
+
+const showHelp = ref(false);
+
+function closeHelp() {
+  showHelp.value = false;
+  onPanelClose('帮助');
+}
+
 function menuClick(item: any) {
   !item.children && console.log('点击了菜单项', item);
   const { id } = item;
   if (id === 'example') {
     showExample.value = true;
+  }
+  if (id === 'help') {
+    showHelp.value = true;
   }
 }
 </script>
@@ -228,12 +240,29 @@ function menuClick(item: any) {
       @close="closeExample"
       @dock="onPanelDock('示例库', $event)"
     >
-      <div class="panel-body">我是内容</div>
+      <div class="panel-body">我是实例库内容</div>
 
       <template #footer>
         <div class="panel-footer-buttons">
           <button class="btn btn-secondary">取消</button>
           <button class="btn btn-primary">应用</button>
+        </div>
+      </template>
+    </DockablePanel>
+    <DockablePanel
+      v-model:visible="showHelp"
+      title="帮助"
+      :width="400"
+      :height="500"
+      @close="closeHelp"
+      @dock="onPanelDock('帮助', $event)"
+    >
+      <div class="panel-body">我是帮助内容</div>
+
+      <template #footer>
+        <div class="panel-footer-buttons">
+          <button class="btn btn-secondary">取消帮助</button>
+          <button class="btn btn-primary">应用帮助</button>
         </div>
       </template>
     </DockablePanel>

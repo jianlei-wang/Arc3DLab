@@ -2,83 +2,52 @@
 import { onMounted, ref, computed } from 'vue';
 import SideBar from './SideBar.vue';
 import { initMap } from '@/utils/cesium/InitMap';
+import { 
+  addDockedPanel, 
+  removeDockedPanel, 
+  setPanelContent, 
+  setActiveDockedPanel, 
+  getDockedPanels, 
+  getActivePanel, 
+  getPanelContents, 
+  getShowDockPreview,
+  getShowUnifiedCloseButton,
+  initializeDockPanelGlobals,
+  setExternalRefUpdater
+} from '@/utils/PanelDock';
 
 defineOptions({ name: '关键视图', inheritAttrs: false });
 
-const dockedPanels = ref<any[]>([]); // 存储停靠的面板
-const activePanel = ref<any>(null); // 当前激活的面板
-const showDockPreview = ref(false); // 显示停靠预览
+// 获取停靠面板相关数据的响应式引用
+const dockedPanels = ref(getDockedPanels());
+const activePanel = ref(getActivePanel());
+const panelContents = ref(getPanelContents());
+const showDockPreview = ref(getShowDockPreview());
+
+// 计算是否显示统一关闭按钮
+const showUnifiedCloseButton = computed(() => getShowUnifiedCloseButton());
 
 onMounted(() => {
   window.viewer = initMap('map-container');
+  // 设置外部引用更新函数
+  setExternalRefUpdater(() => {
+    dockedPanels.value = getDockedPanels();
+    activePanel.value = getActivePanel();
+    panelContents.value = getPanelContents();
+    showDockPreview.value = getShowDockPreview();
+  });
+  // 初始化全局函数
+  initializeDockPanelGlobals();
 });
-
-// 添加停靠面板的方法
-const addDockedPanel = (panel: any) => {
-  dockedPanels.value.push(panel);
-  // 自动激活新添加的面板
-  activePanel.value = panel;
-};
-
-// 移除停靠面板的方法
-const removeDockedPanel = (panelId: string) => {
-  const index = dockedPanels.value.findIndex((p) => p.id === panelId);
-  if (index > -1) {
-    dockedPanels.value.splice(index, 1);
-    if (activePanel.value && activePanel.value.id === panelId) {
-      activePanel.value =
-        dockedPanels.value.length > 0 ? dockedPanels.value[0] : null;
-    }
-  }
-};
 
 // 切换激活面板
 const setActivePanel = (panel: any) => {
   activePanel.value = panel;
 };
 
-// 根据面板标题设置激活面板
-const setActivePanelByTitle = (panelTitle: string) => {
-  const panel = dockedPanels.value.find((p) => p.title === panelTitle);
-  if (panel) {
-    activePanel.value = panel;
-  }
-};
 
-// 扩展 Window 接口
-declare global {
-  interface Window {
-    addDockedPanel: (panel: any) => void;
-    removeDockedPanel: (panelId: string) => void;
-    showDockingPreview: () => void;
-    hideDockingPreview: () => void;
-    setActiveDockedPanel?: (panelTitle: string) => void;
-  }
-}
 
-// 提供给全局使用
-window.addDockedPanel = addDockedPanel;
-window.removeDockedPanel = removeDockedPanel;
-window.setActiveDockedPanel = setActivePanelByTitle;
 
-// 显示停靠预览
-const showDockingPreview = () => {
-  showDockPreview.value = true;
-};
-
-// 隐藏停靠预览
-const hideDockingPreview = () => {
-  showDockPreview.value = false;
-};
-
-// 提供给全局使用停靠预览方法
-window.showDockingPreview = showDockingPreview;
-window.hideDockingPreview = hideDockingPreview;
-
-// 计算是否显示统一关闭按钮
-const showUnifiedCloseButton = computed(() => {
-  return dockedPanels.value.length === 1;
-});
 </script>
 
 <template>
@@ -116,13 +85,20 @@ const showUnifiedCloseButton = computed(() => {
           <button
             v-if="showUnifiedCloseButton"
             class="close-btn"
-            @click="removeDockedPanel(activePanel.id)"
+            @click="activePanel && removeDockedPanel(activePanel.id)"
           >
             ×
           </button>
         </div>
         <div class="panel-content">
           <!-- 显示当前激活面板的内容 -->
+          <div v-for="panel in dockedPanels" :key="panel.id" v-show="panel.id === activePanel?.id">
+            <div v-if="panelContents.value && panelContents.value.get && panelContents.value.get(panel.id)" v-html="panelContents.value.get(panel.id)"></div>
+            <div v-else-if="panel.content" v-html="panel.content"></div>
+            <div v-else>
+              {{ panel.title }} 内容区域
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -157,7 +133,7 @@ const showUnifiedCloseButton = computed(() => {
       height: 100%;
       background: rgba(64, 158, 255, 0.1);
       border: 2px dashed var(--ev-border-light);
-      z-index: 999;
+      z-index: 1000;
       pointer-events: none;
     }
 
