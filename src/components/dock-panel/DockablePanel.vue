@@ -181,7 +181,7 @@ const stopDrag = () => {
 // 停靠面板
 const dockPanel = () => {
   // 使用 PanelDock.ts 中的 onPanelDock 函数处理停靠逻辑
-  if (window.addDockedPanel) {
+  if (Boolean(window.addDockedPanel)) {
     // 确保获取到完整的面板内容
     nextTick(() => {
       const content =

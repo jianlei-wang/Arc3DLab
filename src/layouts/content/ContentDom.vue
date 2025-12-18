@@ -2,18 +2,15 @@
 import { onMounted, ref, computed } from 'vue';
 import SideBar from './SideBar.vue';
 import { initMap } from '@/utils/cesium/InitMap';
-import { 
-  addDockedPanel, 
-  removeDockedPanel, 
-  setPanelContent, 
-  setActiveDockedPanel, 
-  getDockedPanels, 
-  getActivePanel, 
-  getPanelContents, 
+import {
+  removeDockedPanel,
+  getDockedPanels,
+  getActivePanel,
+  getPanelContents,
   getShowDockPreview,
   getShowUnifiedCloseButton,
   initializeDockPanelGlobals,
-  setExternalRefUpdater
+  setExternalRefUpdater,
 } from '@/utils/PanelDock';
 
 defineOptions({ name: '关键视图', inheritAttrs: false });
@@ -44,10 +41,6 @@ onMounted(() => {
 const setActivePanel = (panel: any) => {
   activePanel.value = panel;
 };
-
-
-
-
 </script>
 
 <template>
@@ -92,12 +85,21 @@ const setActivePanel = (panel: any) => {
         </div>
         <div class="panel-content">
           <!-- 显示当前激活面板的内容 -->
-          <div v-for="panel in dockedPanels" :key="panel.id" v-show="panel.id === activePanel?.id">
-            <div v-if="panelContents.value && panelContents.value.get && panelContents.value.get(panel.id)" v-html="panelContents.value.get(panel.id)"></div>
+          <div
+            v-for="panel in dockedPanels"
+            :key="panel.id"
+            v-show="panel.id === activePanel?.id"
+          >
+            <div
+              v-if="
+                panelContents &&
+                panelContents.get &&
+                panelContents.get(panel.id)
+              "
+              v-html="panelContents.get(panel.id)"
+            ></div>
             <div v-else-if="panel.content" v-html="panel.content"></div>
-            <div v-else>
-              {{ panel.title }} 内容区域
-            </div>
+            <div v-else>{{ panel.title }} 内容区域</div>
           </div>
         </div>
       </div>

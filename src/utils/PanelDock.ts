@@ -110,51 +110,54 @@ export function onPanelDock(panelName: string, panelData: any) {
   console.log(`${panelName}已停靠:`, panelData);
 
   // 检查是否已存在同名面板
-  let existingPanel = dockedPanels.value.find((p: any) => p.title === panelName);
-  
+  let existingPanel = dockedPanels.value.find(
+    (p: any) => p.title === panelName
+  );
+
   if (!existingPanel) {
     // 创建新面板
     const newPanel = {
       id: 'panel_' + Date.now(),
       title: panelName,
-      ...panelData
+      ...panelData,
     };
     dockedPanels.value.push(newPanel);
     existingPanel = newPanel;
   }
-  
+
   // 更新面板数据
   if (panelData) {
     Object.assign(existingPanel, panelData);
-    
+
     // 保存面板内容
     if (panelData.content) {
       setPanelContent(existingPanel.id, panelData.content);
     }
   }
-  
+
   // 自动激活面板
   activePanel.value = existingPanel;
-  
+
   // 更新外部引用
   callExternalUpdater();
 }
 
-// 扩展 Window 接口
-export interface DockedPanelWindow extends Window {
-  addDockedPanel: (panel: any) => void;
-  removeDockedPanel: (panelId: string) => void;
-  setPanelContent: (panelId: string, content: any) => void;
-  showDockingPreview: () => void;
-  hideDockingPreview: () => void;
-  setActiveDockedPanel?: (panelTitle: string) => void;
+declare global {
+  interface Window {
+    addDockedPanel: (panel: any) => void;
+    removeDockedPanel: (panelId: string) => void;
+    setPanelContent: (panelId: string, content: any) => void;
+    showDockingPreview: () => void;
+    hideDockingPreview: () => void;
+    setActiveDockedPanel?: (panelTitle: string) => void;
+  }
 }
 
 // 初始化全局函数
 export function initializeDockPanelGlobals() {
   // 确保 window 对象有正确的类型
   const win = window as any;
-  
+
   win.addDockedPanel = addDockedPanel;
   win.removeDockedPanel = removeDockedPanel;
   win.setPanelContent = setPanelContent;
