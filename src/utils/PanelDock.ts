@@ -142,26 +142,13 @@ export function onPanelDock(panelName: string, panelData: any) {
   callExternalUpdater();
 }
 
-declare global {
-  interface Window {
-    addDockedPanel: (panel: any) => void;
-    removeDockedPanel: (panelId: string) => void;
-    setPanelContent: (panelId: string, content: any) => void;
-    showDockingPreview: () => void;
-    hideDockingPreview: () => void;
-    setActiveDockedPanel?: (panelTitle: string) => void;
-  }
-}
-
 // 初始化全局函数
 export function initializeDockPanelGlobals() {
   // 确保 window 对象有正确的类型
-  const win = window as any;
-
-  win.addDockedPanel = addDockedPanel;
-  win.removeDockedPanel = removeDockedPanel;
-  win.setPanelContent = setPanelContent;
-  win.showDockingPreview = showDockingPreview;
-  win.hideDockingPreview = hideDockingPreview;
-  win.setActiveDockedPanel = setActiveDockedPanel;
+  window.addDockedPanel = addDockedPanel;
+  window.removeDockedPanel = removeDockedPanel;
+  window.setPanelContent = setPanelContent;
+  window.showDockingPreview = showDockingPreview;
+  window.hideDockingPreview = hideDockingPreview;
+  window.setActiveDockedPanel = setActiveDockedPanel;
 }

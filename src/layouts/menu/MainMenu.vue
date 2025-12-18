@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import DockablePanel from '@/components/dock-panel/DockablePanel.vue';
+import GraphView from '@/components/examples/graph/GraphView.vue';
 import GitHub from '@/components/GitHub.vue';
 import LanguageSwitcher from '@/components/LanguageSwitcher.vue';
 import TimeNow from '@/components/TimeNow.vue';
@@ -235,12 +236,12 @@ function menuClick(item: any) {
     <DockablePanel
       v-model:visible="showExample"
       title="示例库"
-      :width="400"
-      :height="500"
+      :width="1000"
+      :height="800"
       @close="closeExample"
       @dock="onPanelDock('示例库', $event)"
     >
-      <div class="panel-body">我是实例库内容</div>
+      <GraphView />
 
       <template #footer>
         <div class="panel-footer-buttons">
