@@ -16,7 +16,7 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  visible: false,
+  visible: true,
   title: '面板标题',
   width: 400,
   height: 300,
@@ -390,7 +390,6 @@ function handleResize() {
 
 .panel-content {
   flex: 1;
-  padding: 16px;
   overflow: auto;
 }
 

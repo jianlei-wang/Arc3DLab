@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import DockablePanel from '@/components/dock-panel/DockablePanel.vue';
-import GraphView from '@/components/examples/graph/GraphView.vue';
+import DemoExample from '@/components/examples/DemoExample.vue';
 import GitHub from '@/components/GitHub.vue';
 import LanguageSwitcher from '@/components/LanguageSwitcher.vue';
 import TimeNow from '@/components/TimeNow.vue';
@@ -144,11 +144,6 @@ function handleSubMenuLeave(parentId: string) {
 
 const showExample = ref(false);
 
-function closeExample() {
-  showExample.value = false;
-  onPanelClose('示例库');
-}
-
 const showHelp = ref(false);
 
 function closeHelp() {
@@ -233,23 +228,13 @@ function menuClick(item: any) {
       <GitHub />
       <TimeNow />
     </div>
-    <DockablePanel
-      v-model:visible="showExample"
-      title="示例库"
-      :width="1000"
-      :height="800"
-      @close="closeExample"
-      @dock="onPanelDock('示例库', $event)"
-    >
-      <GraphView />
 
-      <template #footer>
-        <div class="panel-footer-buttons">
-          <button class="btn btn-secondary">取消</button>
-          <button class="btn btn-primary">应用</button>
-        </div>
-      </template>
-    </DockablePanel>
+    <Teleport to="body">
+      <DemoExample
+        :visible="showExample"
+        @update:visible="showExample = $event"
+      />
+    </Teleport>
     <DockablePanel
       v-model:visible="showHelp"
       title="帮助"

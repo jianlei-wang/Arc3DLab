@@ -1,0 +1,19 @@
+@use './base.scss';
+.el-collapse {
+  --el-fill-color-blank: transparent;
+  --el-text-color-primary: var(--ev-color-white);
+  --el-border-color-lighter: var(--ev-border-color);
+  border: none !important;
+  .el-collapse-item__header {
+    border-bottom: 1px dashed var(--ev-border-light);
+    &.is-active {
+      border-bottom: 1px solid var(--ev-border-light);
+    }
+  }
+  .el-collapse-item__wrap {
+    border-bottom: 1px solid var(--ev-border-light);
+    .el-collapse-item__content {
+      padding: 12px 6px;
+    }
+  }
+}
