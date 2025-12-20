@@ -12,6 +12,7 @@ import {
   initializeDockPanelGlobals,
   setExternalRefUpdater,
 } from '@/utils/PanelDock';
+import DemoExample from '@/components/examples/DemoExample.vue';
 
 defineOptions({ name: '关键视图', inheritAttrs: false });
 
@@ -36,6 +37,17 @@ onMounted(() => {
   // 初始化全局函数
   initializeDockPanelGlobals();
 });
+
+// 根据面板名称获取对应组件
+const getComponentByName = (name: string) => {
+  // 这里可以根据面板名称返回对应的组件
+  switch (name) {
+    case '示例库':
+      return DemoExample;
+    default:
+      return null;
+  }
+};
 
 // 切换激活面板
 const setActivePanel = (panel: any) => {
@@ -90,8 +102,15 @@ const setActivePanel = (panel: any) => {
             :key="panel.id"
             v-show="panel.id === activePanel?.id"
           >
+            <!-- 使用动态组件方式渲染停靠面板内容 -->
+            <component 
+              v-if="panel.componentInfo" 
+              :is="getComponentByName(panel.title)"
+              v-bind="panel.componentInfo.props"
+              :is-docked="true"
+            />
             <div
-              v-if="
+              v-else-if="
                 panelContents &&
                 panelContents.get &&
                 panelContents.get(panel.id)

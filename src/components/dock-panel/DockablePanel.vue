@@ -184,9 +184,15 @@ const dockPanel = () => {
   if (Boolean(window.addDockedPanel)) {
     // 确保获取到完整的面板内容
     nextTick(() => {
-      const content =
-        panelRef.value?.querySelector('.panel-content')?.innerHTML;
-      onPanelDock(props.title, { content: content, width: props.width });
+      // 传递组件信息而不是简单的innerHTML
+      onPanelDock(props.title, { 
+        width: props.width,
+        // 添加组件相关信息以便在停靠区域重新渲染
+        componentInfo: {
+          props: {...props},
+          // 可以根据需要添加更多组件信息
+        }
+      });
 
       // 在获取内容后再关闭浮动面板
       emit('update:visible', false);
