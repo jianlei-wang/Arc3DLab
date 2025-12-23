@@ -4,6 +4,8 @@ import electron from 'vite-plugin-electron'
 import renderer from 'vite-plugin-electron-renderer'
 import cesium from 'vite-plugin-cesium'
 import path from 'node:path'
+import { nodeResolve } from '@rollup/plugin-node-resolve'
+import commonjs from '@rollup/plugin-commonjs'
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -52,6 +54,14 @@ export default defineConfig({
     ]),
     renderer(),
     {
+      ...nodeResolve({
+        preferBuiltins: true,
+      }),
+    },
+    {
+      ...commonjs(),
+    },
+    {
       name: 'fix-cesium-path',
       transformIndexHtml(html) {
         return html
@@ -64,6 +74,12 @@ export default defineConfig({
     alias: {
       '@': path.resolve(__dirname, './src'),
     },
+  },
+  define: {
+    global: 'globalThis',
+  },
+  optimizeDeps: {
+    include: ['events'],
   },
   // 开发服务器配置
   server: {

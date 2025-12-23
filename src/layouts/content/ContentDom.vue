@@ -56,7 +56,7 @@ const setActivePanel = (panel: any) => {
 </script>
 
 <template>
-  <div class="content-dom-main border-t border-b">
+  <div class="content-dom-main border-t border-b" id="c-body">
     <SideBar />
     <div class="map-container-wrapper">
       <div id="map-container"></div>
@@ -103,8 +103,8 @@ const setActivePanel = (panel: any) => {
             v-show="panel.id === activePanel?.id"
           >
             <!-- 使用动态组件方式渲染停靠面板内容 -->
-            <component 
-              v-if="panel.componentInfo" 
+            <component
+              v-if="panel.componentInfo"
               :is="getComponentByName(panel.title)"
               v-bind="panel.componentInfo.props"
               :is-docked="true"
@@ -133,7 +133,7 @@ const setActivePanel = (panel: any) => {
   height: 0;
   background: green;
   display: flex;
-
+  position: relative;
   .map-container-wrapper {
     width: 100%;
     height: 100%;
