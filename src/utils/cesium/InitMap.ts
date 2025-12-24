@@ -26,7 +26,7 @@ export function initMap(eleId: string): Viewer {
     sceneModePicker: false,
     timeline: false,
     sceneMode: SceneMode.SCENE3D,
-    scene3DOnly: true,
+    // scene3DOnly: true,
     baseLayerPicker: false,
     navigationHelpButton: false,
     vrButton: false,

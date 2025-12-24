@@ -9,6 +9,7 @@ import { onPanelClose, onPanelDock } from '@/utils/PanelDock';
 import { ref, reactive } from 'vue';
 import PerformancePanel from '@/components/easy-tools/PerformancePanel.vue';
 import CesiumNavigation from '@/components/easy-tools/CesiumNavigation.vue';
+import { useI18n } from 'vue-i18n';
 
 defineOptions({ name: '主菜单标题', inheritAttrs: false });
 
@@ -41,6 +42,14 @@ const menuItems = reactive<any>([
       {
         id: 'view-modes',
         label: '视图模式',
+        children: [
+          {
+            id: 'view-23D',
+            label: ['2D-Modes', '3D-Modes'],
+            type: 'radio',
+            value: '3D-Modes',
+          },
+        ],
       },
     ],
   },
@@ -100,6 +109,17 @@ function menuClick(item: any) {
     showHelp.value = true;
   }
 }
+
+const { t } = useI18n();
+
+const menuBtnItems = (item: any) => {
+  const { id, type, label } = item;
+  if (type === 'radio') {
+    return label;
+  } else {
+    return t(`menu.${id}`);
+  }
+};
 const boolPerformance = ref(false); // 性能面板
 const boolNavigation = ref(false); // 导航面板
 const menuBtnChange = (item: any, $event: any) => {
@@ -114,6 +134,9 @@ const menuBtnChange = (item: any, $event: any) => {
       break;
     case 'view-navigation':
       boolNavigation.value = $event;
+      break;
+    case 'view-23D':
+      window.viewer.scene.mode = $event === '3D-Modes' ? 3 : 2;
       break;
     default:
       break;
@@ -155,7 +178,7 @@ const menuBtnChange = (item: any, $event: any) => {
             <div class="submenu-item-content">
               <MenuButton
                 :type="child.type"
-                :label="$t(`menu.${child.id}`)"
+                :label="menuBtnItems(child)"
                 v-model="child.value"
                 @change="menuBtnChange(child, $event)"
               />
@@ -176,10 +199,16 @@ const menuBtnChange = (item: any, $event: any) => {
                 :key="grandchild.id"
                 @click="menuClick(grandchild)"
               >
-                <div class="submenu-item-content">
-                  <span>{{
-                    grandchild.label || $t(`menu.${grandchild.id}`)
-                  }}</span>
+                <div
+                  class="submenu-item-content"
+                  :class="{ radio: grandchild.type === 'radio' }"
+                >
+                  <MenuButton
+                    :type="grandchild.type"
+                    :label="menuBtnItems(grandchild)"
+                    v-model="grandchild.value"
+                    @change="menuBtnChange(grandchild, $event)"
+                  />
                 </div>
               </div>
             </div>
@@ -275,7 +304,7 @@ const menuBtnChange = (item: any, $event: any) => {
             padding: 5px 10px;
             font-size: 14px;
             z-index: 10000;
-            &:hover {
+            &:not(.radio):hover {
               background-color: #047dd6;
               cursor: pointer;
             }

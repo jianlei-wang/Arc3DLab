@@ -13,7 +13,9 @@
     "help": "Help",
     "view-performance": "Performance Panel",
     "view-navigation": "Navigation Panel",
-    "view-modes": "View Modes"
+    "view-modes": "View Modes",
+    "2D-Modes": "2D Modes",
+    "3D-Modes": "3D Modes"
   },
   "language": {
     "zh-CN": "简体中文",

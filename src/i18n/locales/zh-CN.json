@@ -13,7 +13,9 @@
     "help": "帮助(H)",
     "view-performance": "性能面板",
     "view-navigation": "导航面板",
-    "view-modes": "视图模式"
+    "view-modes": "视图模式",
+    "2D-Modes": "2D 模式",
+    "3D-Modes": "3D 模式"
   },
   "language": {
     "zh-CN": "简体中文",

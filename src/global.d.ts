@@ -15,4 +15,5 @@ declare global {
     setActiveDockedPanel?: (panelTitle: string) => void;
   }
 }
+
 export default {};
