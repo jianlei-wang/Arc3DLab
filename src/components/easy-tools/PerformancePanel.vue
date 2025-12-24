@@ -1,12 +1,28 @@
 <script setup lang="ts">
 import Stats from 'stats.js';
-import { reactive, ref, onBeforeMount, onMounted, nextTick } from 'vue';
+import { ref, onMounted, onUnmounted, nextTick } from 'vue';
 
 defineOptions({ name: '性能面板', inheritAttrs: false });
 
 const statsRef = ref<HTMLElement | null>(null);
 
+const getSidebarWidth = () => {
+  const doms = document.getElementsByClassName('side-bar-main');
+  return doms.length > 0 ? doms[0]!.clientWidth + 1 : 1;
+};
+
+const updatePanelPosition = () => {
+  const newWidth = getSidebarWidth();
+  if (statsRef.value) {
+    statsRef.value.style.left = `${newWidth}px`;
+  }
+};
+
 onMounted(() => {
+  updatePanelPosition();
+  // 监听窗口大小变化事件
+  window.addEventListener('resize', updatePanelPosition);
+
   nextTick(() => {
     const statsFPS = new Stats();
     statsFPS.showPanel(0); // 0: fps
@@ -38,6 +54,11 @@ onMounted(() => {
     requestAnimationFrame(animate);
   });
 });
+
+onUnmounted(() => {
+  // 组件卸载时移除事件监听器
+  window.removeEventListener('resize', updatePanelPosition);
+});
 </script>
 <template>
   <div class="performance-panel" ref="statsRef"></div>
@@ -45,8 +66,7 @@ onMounted(() => {
 <style lang="scss" scoped>
 .performance-panel {
   position: absolute;
-  top: 45px;
-  right: 2px;
+  top: 101px;
   display: flex;
   :deep(.stats-item) {
     position: initial !important;

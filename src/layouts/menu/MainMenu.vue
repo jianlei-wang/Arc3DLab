@@ -1,115 +1,47 @@
 <script setup lang="ts">
 import DockablePanel from '@/components/dock-panel/DockablePanel.vue';
+import MenuButton from '@/components/easy-tools/MenuButton.vue';
 import DemoExample from '@/components/examples/DemoExample.vue';
 import GitHub from '@/components/GitHub.vue';
 import LanguageSwitcher from '@/components/LanguageSwitcher.vue';
 import TimeNow from '@/components/TimeNow.vue';
 import { onPanelClose, onPanelDock } from '@/utils/PanelDock';
 import { ref, reactive } from 'vue';
+import PerformancePanel from '@/components/easy-tools/PerformancePanel.vue';
 
 defineOptions({ name: '主菜单标题', inheritAttrs: false });
 
 // 定义菜单结构，支持多级嵌套
-const menuItems = reactive([
+const menuItems = reactive<any>([
   {
     id: 'project',
-    children: [
-      { id: 'new-project', label: '新建工程' },
-      { id: 'open-project', label: '打开工程' },
-      { id: 'save-project', label: '保存工程' },
-      {
-        id: 'project-settings',
-        label: '工程设置',
-        children: [
-          { id: 'general-settings', label: '常规设置' },
-          { id: 'display-settings', label: '显示设置' },
-          { id: 'performance-settings', label: '性能设置' },
-        ],
-      },
-    ],
   },
   {
     id: 'data',
-    children: [
-      { id: 'import-data', label: '导入数据' },
-      { id: 'export-data', label: '导出数据' },
-      {
-        id: 'data-management',
-        label: '数据管理',
-        children: [
-          { id: 'layer-manager', label: '图层管理' },
-          { id: 'attribute-table', label: '属性表' },
-          { id: 'spatial-query', label: '空间查询' },
-        ],
-      },
-    ],
   },
   {
     id: 'edit',
-    children: [
-      { id: 'undo', label: '撤销' },
-      { id: 'redo', label: '重做' },
-      { id: 'cut', label: '剪切' },
-      { id: 'copy', label: '复制' },
-      { id: 'paste', label: '粘贴' },
-    ],
   },
   {
     id: 'view',
     children: [
-      { id: 'zoom-in', label: '放大' },
-      { id: 'zoom-out', label: '缩小' },
-      { id: 'full-extent', label: '全图' },
+      {
+        id: 'view-performance',
+        label: '性能面板',
+        type: 'checkbox',
+        value: false,
+      },
       {
         id: 'view-modes',
         label: '视图模式',
-        children: [
-          { id: '2d-mode', label: '2D模式' },
-          { id: '3d-mode', label: '3D模式' },
-          { id: 'oblique-mode', label: '倾斜模式' },
-        ],
       },
     ],
   },
   {
     id: 'tools',
-    children: [
-      {
-        id: 'analysis-tools',
-        label: '分析工具',
-        children: [
-          { id: 'buffer-analysis', label: '缓冲区分析' },
-          { id: 'overlay-analysis', label: '叠加分析' },
-          { id: 'network-analysis', label: '网络分析' },
-        ],
-      },
-      {
-        id: 'drawing-tools',
-        label: '绘图工具',
-        children: [
-          { id: 'point-tool', label: '点工具' },
-          { id: 'line-tool', label: '线工具' },
-          { id: 'polygon-tool', label: '面工具' },
-          { id: 'text-tool', label: '文本工具' },
-        ],
-      },
-    ],
   },
   {
     id: 'setting',
-    children: [
-      { id: 'preferences', label: '首选项' },
-      { id: 'plugins', label: '插件管理' },
-      {
-        id: 'interface',
-        label: '界面设置',
-        children: [
-          { id: 'theme-settings', label: '主题设置' },
-          { id: 'toolbar-layout', label: '工具栏布局' },
-          { id: 'shortcut-keys', label: '快捷键设置' },
-        ],
-      },
-    ],
   },
   { id: 'example' },
   { id: 'help' },
@@ -161,6 +93,21 @@ function menuClick(item: any) {
     showHelp.value = true;
   }
 }
+const boolPerformance = ref(false);
+const menuBtnChange = (item: any, $event: any) => {
+  console.log('菜单按钮变化', item, $event);
+  const { id, type } = item;
+  if (type === 'checkbox') {
+    item.checked = $event;
+  }
+  switch (id) {
+    case 'view-performance':
+      boolPerformance.value = $event;
+      break;
+    default:
+      break;
+  }
+};
 </script>
 
 <template>
@@ -195,7 +142,13 @@ function menuClick(item: any) {
             @click="menuClick(child)"
           >
             <div class="submenu-item-content">
-              <span>{{ child.label || $t(`menu.${child.id}`) }}</span>
+              <MenuButton
+                :type="child.type"
+                :label="$t(`menu.${child.id}`)"
+                v-model="child.value"
+                @change="menuBtnChange(child, $event)"
+              />
+
               <!-- 二级下拉菜单指示器 -->
               <span v-if="child.children" class="submenu-arrow">▶</span>
             </div>
@@ -234,6 +187,7 @@ function menuClick(item: any) {
         :visible="showExample"
         @update:visible="showExample = $event"
       />
+      <PerformancePanel v-if="boolPerformance" />
     </Teleport>
     <DockablePanel
       v-model:visible="showHelp"
