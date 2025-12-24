@@ -47,5 +47,9 @@ export function initMap(eleId: string): Viewer {
       requestWebgl1: false,
     },
   });
+  console.log('viewer', viewer);
+  // 隐藏logo信息
+  (viewer.cesiumWidget.creditContainer as HTMLDivElement).style.display =
+    'none';
   return viewer;
 }

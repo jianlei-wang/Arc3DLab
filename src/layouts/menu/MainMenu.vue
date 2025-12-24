@@ -8,6 +8,7 @@ import TimeNow from '@/components/TimeNow.vue';
 import { onPanelClose, onPanelDock } from '@/utils/PanelDock';
 import { ref, reactive } from 'vue';
 import PerformancePanel from '@/components/easy-tools/PerformancePanel.vue';
+import CesiumNavigation from '@/components/easy-tools/CesiumNavigation.vue';
 
 defineOptions({ name: '主菜单标题', inheritAttrs: false });
 
@@ -28,6 +29,12 @@ const menuItems = reactive<any>([
       {
         id: 'view-performance',
         label: '性能面板',
+        type: 'checkbox',
+        value: false,
+      },
+      {
+        id: 'view-navigation',
+        label: '导航面板',
         type: 'checkbox',
         value: false,
       },
@@ -93,7 +100,8 @@ function menuClick(item: any) {
     showHelp.value = true;
   }
 }
-const boolPerformance = ref(false);
+const boolPerformance = ref(false); // 性能面板
+const boolNavigation = ref(false); // 导航面板
 const menuBtnChange = (item: any, $event: any) => {
   console.log('菜单按钮变化', item, $event);
   const { id, type } = item;
@@ -103,6 +111,9 @@ const menuBtnChange = (item: any, $event: any) => {
   switch (id) {
     case 'view-performance':
       boolPerformance.value = $event;
+      break;
+    case 'view-navigation':
+      boolNavigation.value = $event;
       break;
     default:
       break;
@@ -188,6 +199,7 @@ const menuBtnChange = (item: any, $event: any) => {
         @update:visible="showExample = $event"
       />
       <PerformancePanel v-if="boolPerformance" />
+      <CesiumNavigation v-if="boolNavigation" />
     </Teleport>
     <DockablePanel
       v-model:visible="showHelp"
@@ -262,7 +274,7 @@ const menuBtnChange = (item: any, $event: any) => {
             align-items: center;
             padding: 5px 10px;
             font-size: 14px;
-
+            z-index: 10000;
             &:hover {
               background-color: #047dd6;
               cursor: pointer;

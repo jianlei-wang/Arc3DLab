@@ -70,6 +70,7 @@ onUnmounted(() => {
   display: flex;
   :deep(.stats-item) {
     position: initial !important;
+    z-index: 1 !important;
   }
 }
 </style>
