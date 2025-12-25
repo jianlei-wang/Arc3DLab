@@ -11,11 +11,16 @@
     "setting": "Setting",
     "example": "Example",
     "help": "Help",
-    "view-performance": "Performance Panel",
-    "view-navigation": "Navigation Panel",
+    "view-panel": "Panel",
+    "panel-performance": "Performance Panel",
+    "panel-navigation": "Navigation Panel",
     "view-modes": "View Modes",
     "2D-Modes": "2D Modes",
     "3D-Modes": "3D Modes"
+  },
+  "add": {
+    "3dtiles": "Add 3D Tiles",
+    "gltf": "Add GLTF"
   },
   "language": {
     "zh-CN": "简体中文",

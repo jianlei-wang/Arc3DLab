@@ -10,37 +10,41 @@ import { ref, reactive } from 'vue';
 import PerformancePanel from '@/components/easy-tools/PerformancePanel.vue';
 import CesiumNavigation from '@/components/easy-tools/CesiumNavigation.vue';
 import { useI18n } from 'vue-i18n';
+import { changeMode } from '@/utils/cesium/Navigation';
 
 defineOptions({ name: '主菜单标题', inheritAttrs: false });
 
 // 定义菜单结构，支持多级嵌套
 const menuItems = reactive<any>([
-  {
-    id: 'project',
-  },
-  {
-    id: 'data',
-  },
-  {
-    id: 'edit',
-  },
+  { id: 'project' },
+  { id: 'data' },
+  { id: 'edit' },
   {
     id: 'view',
     children: [
       {
-        id: 'view-performance',
-        label: '性能面板',
-        type: 'checkbox',
-        value: false,
+        id: 'view-panel',
+        icon: 'icon-panel',
+        label: '面板',
+        children: [
+          {
+            id: 'panel-performance',
+            label: '性能面板',
+            type: 'checkbox',
+            value: false,
+          },
+          {
+            id: 'panel-navigation',
+            label: '导航面板',
+            type: 'checkbox',
+            value: false,
+          },
+        ],
       },
-      {
-        id: 'view-navigation',
-        label: '导航面板',
-        type: 'checkbox',
-        value: false,
-      },
+
       {
         id: 'view-modes',
+        icon: 'icon-modes',
         label: '视图模式',
         children: [
           {
@@ -53,12 +57,8 @@ const menuItems = reactive<any>([
       },
     ],
   },
-  {
-    id: 'tools',
-  },
-  {
-    id: 'setting',
-  },
+  { id: 'tools' },
+  { id: 'setting' },
   { id: 'example' },
   { id: 'help' },
 ]);
@@ -109,9 +109,10 @@ function menuClick(item: any) {
     showHelp.value = true;
   }
 }
-
+const iconImg = (icon: string) => {
+  return new URL(`../../assets/images/menu/${icon}.png`, import.meta.url).href;
+};
 const { t } = useI18n();
-
 const menuBtnItems = (item: any) => {
   const { id, type, label } = item;
   if (type === 'radio') {
@@ -129,14 +130,14 @@ const menuBtnChange = (item: any, $event: any) => {
     item.checked = $event;
   }
   switch (id) {
-    case 'view-performance':
+    case 'panel-performance':
       boolPerformance.value = $event;
       break;
-    case 'view-navigation':
+    case 'panel-navigation':
       boolNavigation.value = $event;
       break;
     case 'view-23D':
-      window.viewer.scene.mode = $event === '3D-Modes' ? 3 : 2;
+      changeMode($event === '3D-Modes' ? 3 : 2);
       break;
     default:
       break;
@@ -176,12 +177,15 @@ const menuBtnChange = (item: any, $event: any) => {
             @click="menuClick(child)"
           >
             <div class="submenu-item-content">
-              <MenuButton
-                :type="child.type"
-                :label="menuBtnItems(child)"
-                v-model="child.value"
-                @change="menuBtnChange(child, $event)"
-              />
+              <div class="submenu-icon">
+                <img v-if="child.icon" :src="iconImg(child.icon)" alt="" />
+                <MenuButton
+                  :type="child.type"
+                  :label="menuBtnItems(child)"
+                  v-model="child.value"
+                  @change="menuBtnChange(child, $event)"
+                />
+              </div>
 
               <!-- 二级下拉菜单指示器 -->
               <span v-if="child.children" class="submenu-arrow">▶</span>
@@ -203,6 +207,11 @@ const menuBtnChange = (item: any, $event: any) => {
                   class="submenu-item-content"
                   :class="{ radio: grandchild.type === 'radio' }"
                 >
+                  <img
+                    v-if="grandchild.icon"
+                    :src="iconImg(grandchild.icon)"
+                    alt=""
+                  />
                   <MenuButton
                     :type="grandchild.type"
                     :label="menuBtnItems(grandchild)"
@@ -308,9 +317,18 @@ const menuBtnChange = (item: any, $event: any) => {
               background-color: #047dd6;
               cursor: pointer;
             }
-
+            .submenu-icon {
+              display: inline-flex;
+              align-items: center;
+              column-gap: 5px;
+              img {
+                width: 20px;
+                height: 20px;
+                transform: translateY(-1px);
+              }
+            }
             .submenu-arrow {
-              margin-left: 5px;
+              margin-left: 15px;
               font-size: 12px;
               transform: translateY(-1px);
             }

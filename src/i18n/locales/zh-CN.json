@@ -11,11 +11,16 @@
     "setting": "设置(S)",
     "example": "示例库(E)",
     "help": "帮助(H)",
-    "view-performance": "性能面板",
-    "view-navigation": "导航面板",
+    "view-panel": "面板",
+    "panel-performance": "性能面板",
+    "panel-navigation": "导航面板",
     "view-modes": "视图模式",
     "2D-Modes": "2D 模式",
     "3D-Modes": "3D 模式"
+  },
+  "add": {
+    "3dtiles": "添加 3D Tiles",
+    "gltf": "添加 GLTF"
   },
   "language": {
     "zh-CN": "简体中文",
