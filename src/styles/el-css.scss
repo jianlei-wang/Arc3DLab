@@ -17,3 +17,22 @@
     }
   }
 }
+
+.el-tabs {
+  --el-bg-color-overlay: transparent;
+  --el-fill-color-light: var(--ev-back-color);
+  --el-border-color: var(--ev-border-color);
+  --el-border-color-light: var(--ev-border-color);
+  --el-color-primary: var(--ev-color-active);
+}
+
+.el-form {
+  --el-text-color-regular: var(--ev-color-white);
+}
+
+.el-input {
+  --el-border-color: var(--ev-border-color);
+  .el-input__wrapper {
+    background-color: transparent;
+  }
+}

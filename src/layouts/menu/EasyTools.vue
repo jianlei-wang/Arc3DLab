@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { reactive, ref, onBeforeMount, onMounted } from 'vue';
+import { ref } from 'vue';
 import DataSource from '@/components/easy-tools/tools/DataSource.vue';
 defineOptions({ name: '快捷工具', inheritAttrs: false });
 const performance = ref(false);
